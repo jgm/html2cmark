@@ -36,12 +36,14 @@ local function handleNode(node)
   while child do
     local new = handleNode(child)
     if skipWhitespace and type(new) == 'string' then
-      if not child.previousSibling and
+      if (not child.previousSibling or
+          not allowWhitespace[child.previousSibling.nodeName]) and
         new:match('^[ \t\r\n]+') then
         local i = new:find('[^ \t\r\n]') or #new
         new = new:sub(i)
       end
-      if not child.nextSibling and
+      if (not child.nextSibling or
+          not allowWhitespace[child.nextSibling.nodeName]) and
         new:match('[ \t\r\n]+$') then
         local i,_ = new:find('[ \t\r\n]*$')
         if i then
