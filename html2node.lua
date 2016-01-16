@@ -119,15 +119,25 @@ local function handleNode(node)
     -- TODO extract CODE contents
   elseif nodeName == 'LI' then
     if has_text then
-      return builder.item(builder.paragraph(contents))
+      local it = builder.item(builder.paragraph(contents))
+      cmark.node_set_list_tight(it, 1)
+      return it
     else
       return builder.item(contents)
     end
   elseif nodeName == 'UL' then
-    -- TODO tight/loose
+    local tight = true
+    for _,c in ipairs(contents) do
+      tight = tight and cmark.node_get_list_tight(c)
+    end
+    contents.tight = tight
     return builder.bullet_list(contents)
   elseif nodeName == 'OL' then
-    -- TODO tight/loose
+    local tight = true
+    for _,c in ipairs(contents) do
+      tight = tight and cmark.node_get_list_tight(c)
+    end
+    contents.tight = tight
     return builder.ordered_list(contents)
   elseif nodeName == 'BR' then
     return builder.linebreak()
