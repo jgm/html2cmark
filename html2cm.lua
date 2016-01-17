@@ -10,6 +10,6 @@ local html2node = require 'html2node'
 local inp = io.read("*a")
 
 local doc = html2node.parse_html(inp)
-io.write(cmark.render_xml(doc, cmark.OPT_DEFAULT))
+-- io.write(cmark.render_xml(doc, cmark.OPT_DEFAULT))
 io.write(cmark.render_commonmark(doc, cmark.OPT_DEFAULT, 72))
 

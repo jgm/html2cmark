@@ -7,6 +7,8 @@ local blockNode = {
   HTML = true,
   HEAD = true,
   ARTICLE = true,
+  MAIN = true,
+  NAV = true,
   HEADER = true,
   ASIDE = true,
   HGROUP = true,
@@ -59,6 +61,7 @@ local blockNode = {
 }
 
 local skipNode = {
+    HEAD = true,
     NAV = true,
     HEADER = true,
     FOOTER = true
@@ -70,6 +73,9 @@ local raw = {
 
 local function handleNode(node)
   local nodeName = node.nodeName
+  if skipNode[nodeName] then
+    return {}
+  end
 
   if raw[nodeName] == 'block' then
     return builder.html_block(node.outerHTML)
@@ -134,7 +140,8 @@ local function handleNode(node)
     local parent = node.parentNode
     local prevS = node.previousSibling
     local nextS = node.nextSibling
-    if (blockNode[parent.nodeName] or
+    if (not parent or
+        blockNode[parent.nodeName] or
         (prevS and (prevS.nodeName == 'BR' or blockNode[prevS.nodeName])) or
         (nextS and blockNode[nextS.nodeName])) then
       if (not prevS or
@@ -147,7 +154,7 @@ local function handleNode(node)
           t = t:gsub('[ \t\r\n]+$','')
       end
     end
-    if #t > 0 then
+    if string.len(t) > 0 then
       return t
     else
       return {}
@@ -155,8 +162,6 @@ local function handleNode(node)
   elseif nodeName == '#comment' then
     local t = node.textContent
     return builder.html_block('<!--' .. t .. '-->')
-  elseif skipNode[nodeName] then
-    return {}
   elseif nodeName == 'HTML' then
     return contents
   elseif nodeName == 'BODY' then
