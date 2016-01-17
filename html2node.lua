@@ -5,6 +5,7 @@ local builder = require'cmark.builder'
 
 local allowWhitespace = {
     A = true,
+    IMG = true,
     EM = true,
     STRONG = true,
     LINK = true,
