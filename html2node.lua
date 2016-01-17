@@ -3,15 +3,59 @@ local gumbo = require'gumbo'
 local cmark = require'cmark'
 local builder = require'cmark.builder'
 
-local allowWhitespace = {
-    A = true,
-    IMG = true,
-    EM = true,
-    STRONG = true,
-    LINK = true,
-    IMAGE = true,
-    CODE = true
-    }
+local blockNode = {
+  HTML = true,
+  ARTICLE = true,
+  HEADER = true,
+  ASIDE = true,
+  HGROUP = true,
+  BLOCKQUOTE = true,
+  HR = true,
+  IFRAME = true,
+  BODY = true,
+  LI = true,
+  MAP = true,
+  BUTTON = true,
+  OBJECT = true,
+  CANVAS = true,
+  OL = true,
+  CAPTION = true,
+  OUTPUT = true,
+  COL = true,
+  P = true,
+  COLGROUP = true,
+  PRE = true,
+  DD = true,
+  PROGRESS = true,
+  DIV = true,
+  SECTION = true,
+  DL = true,
+  TABLE = true,
+  TD = true,
+  DT = true,
+  TBODY = true,
+  EMBED = true,
+  TEXTAREA = true,
+  FIELDSET = true,
+  TFOOT = true,
+  FIGCAPTION = true,
+  TH = true,
+  FIGURE = true,
+  THEAD = true,
+  FOOTER = true,
+  TR = true,
+  FORM = true,
+  UL = true,
+  H1 = true,
+  H2 = true,
+  H3 = true,
+  H4 = true,
+  H5 = true,
+  H6 = true,
+  VIDEO = true,
+  SCRIPT = true,
+  STYLE = true,
+}
 
 local skipNode = {
     NAV = true,
@@ -36,28 +80,22 @@ local function handleNode(node)
   local attributes = node.attributes
   local contents = {}
   local all_text = true
-  local skipWhitespace = not allowWhitespace[nodeName]
   while child do
     local new = handleNode(child)
-    if (skipWhitespace or
-        (child.previousSibling and child.previousSibling.nodeName == 'BR')) and
-        type(new) == 'string' then
-      if (not child.previousSibling or
-          child.previousSibling.nodeName == 'BR' or
-          not allowWhitespace[child.previousSibling.nodeName]) and
-        new:match('^[ \t\r\n]+') then
-        local i = new:find('[^ \t\r\n]') or #new
-        new = new:sub(i)
+    local prevS = child.previousSibling
+    local nextS = child.nextSibling
+    if type(new) == 'string' and
+       (blockNode[nodeName] or
+        (prevS and (prevS.nodeName == 'BR' or blockNode[prevS.nodeName])) or
+        (nextS and blockNode[nextS.nodeName])) then
+      if (not prevS or
+          prevS.nodeName == 'BR' or
+          blockNode[prevS.nodeName]) then
+          new = new:gsub('^[ \t\r\n]+','')
       end
-      if (not child.nextSibling or
-          not allowWhitespace[child.nextSibling.nodeName]) and
-        new:match('[ \t\r\n]+$') then
-        local i,_ = new:find('[ \t\r\n]*$')
-        if i then
-          new = new:sub(1,i - 1)
-        else
-          new = ''
-        end
+      if (not nextS or
+          blockNode[nextS.nodeName]) then
+          new = new:gsub('[ \t\r\n]+$','')
       end
     end
     if type(new) == 'string' then
@@ -190,7 +228,7 @@ local html2node = {}
 
 function html2node.parse_html(htmlstring)
 
-  local html = gumbo.parse(htmlstring, 4)
+  local html = gumbo.parse(htmlstring, 4, 'HTML')
   local nodes = html.documentElement.childNodes
   local children = {}
 
