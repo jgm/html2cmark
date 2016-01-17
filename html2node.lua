@@ -31,7 +31,7 @@ local function handleNode(node)
   local child = node.firstChild
   local attributes = node.attributes
   local contents = {}
-  local has_text = false
+  local all_text = true
   local skipWhitespace = not allowWhitespace[nodeName]
   while child do
     local new = handleNode(child)
@@ -58,10 +58,10 @@ local function handleNode(node)
     end
     if type(new) == 'string' then
       if #new > 0 and nodeName ~= 'OL' and nodeName ~= 'UL' then
-        has_text = true
         contents[#contents + 1] = new
       end
     else
+      all_text = false
       contents[#contents + 1] = new
     end
     child = child.nextSibling
@@ -144,7 +144,7 @@ local function handleNode(node)
       return builder.raw_html(node.outerHTML)
     end
   elseif nodeName == 'LI' then
-    if has_text then
+    if all_text then
       return builder.item(builder.paragraph(contents))
     else
       return builder.item(contents)
