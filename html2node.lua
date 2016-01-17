@@ -5,6 +5,7 @@ local builder = require'cmark.builder'
 
 local blockNode = {
   HTML = true,
+  HEAD = true,
   ARTICLE = true,
   HEADER = true,
   ASIDE = true,
@@ -82,24 +83,12 @@ local function handleNode(node)
   local all_text = true
   while child do
     local new = handleNode(child)
-    local prevS = child.previousSibling
-    local nextS = child.nextSibling
-    if type(new) == 'string' and
-       (blockNode[nodeName] or
-        (prevS and (prevS.nodeName == 'BR' or blockNode[prevS.nodeName])) or
-        (nextS and blockNode[nextS.nodeName])) then
-      if (not prevS or
-          prevS.nodeName == 'BR' or
-          blockNode[prevS.nodeName]) then
-          new = new:gsub('^[ \t\r\n]+','')
+    if type(new) == 'table' then
+      for _,x in ipairs(new) do
+        contents[#contents + 1] = x
       end
-      if (not nextS or
-          blockNode[nextS.nodeName]) then
-          new = new:gsub('[ \t\r\n]+$','')
-      end
-    end
-    if type(new) == 'string' then
-      if #new > 0 and nodeName ~= 'OL' and nodeName ~= 'UL' then
+    elseif type(new) == 'string' then
+      if nodeName ~= 'OL' and nodeName ~= 'UL' then
         contents[#contents + 1] = new
       end
     else
@@ -142,7 +131,27 @@ local function handleNode(node)
 
   if nodeName == '#text' then
     local t = node.textContent
-    return t
+    local parent = node.parentNode
+    local prevS = node.previousSibling
+    local nextS = node.nextSibling
+    if (blockNode[parent.nodeName] or
+        (prevS and (prevS.nodeName == 'BR' or blockNode[prevS.nodeName])) or
+        (nextS and blockNode[nextS.nodeName])) then
+      if (not prevS or
+          prevS.nodeName == 'BR' or
+          blockNode[prevS.nodeName]) then
+          t = t:gsub('^[ \t\r\n]+','')
+      end
+      if (not nextS or
+          blockNode[nextS.nodeName]) then
+          t = t:gsub('[ \t\r\n]+$','')
+      end
+    end
+    if #t > 0 then
+      return t
+    else
+      return {}
+    end
   elseif nodeName == '#comment' then
     local t = node.textContent
     return builder.html_block('<!--' .. t .. '-->')
