@@ -7,7 +7,9 @@ local allowWhitespace = {
     EM = true,
     STRONG = true,
     LINK = true,
-    IMAGE = true }
+    IMAGE = true,
+    CODE = true
+    }
 
 local skipNode = {
     NAV = true,
@@ -139,7 +141,7 @@ local function handleNode(node)
     if #contents == 1 and
         cmark.node_get_type(contents[1]) == cmark.NODE_CODE then
       local code = cmark.node_get_literal(contents[1])
-      return builder.code_block(code .. '\n') -- TODO info string
+      return builder.code_block(code) -- TODO info string
     else
       return builder.raw_html(node.outerHTML)
     end
