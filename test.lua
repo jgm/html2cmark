@@ -42,7 +42,7 @@ for num,test in ipairs(tests) do
 end
 
 io.write(passed .. ' passed, ' .. failed .. ' failed, ' ..
-         errored .. 'errored.\n')
+         errored .. ' errored.\n')
 io.write('Diffs written to diffs.html\n')
 diffs:write('</body>\n</html>\n')
 diffs:close()

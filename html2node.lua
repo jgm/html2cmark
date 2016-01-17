@@ -116,7 +116,13 @@ local function handleNode(node)
     contents.level = 6
     return builder.heading(contents)
   elseif nodeName == 'PRE' then
-    -- TODO extract CODE contents
+    if #contents == 1 and
+        cmark.node_get_type(contents[1]) == cmark.NODE_CODE then
+      local code = cmark.node_get_literal(contents[1])
+      return builder.code_block(code .. '\n') -- TODO info string
+    else
+      return builder.raw_html(node.outerHTML)
+    end
   elseif nodeName == 'LI' then
     if has_text then
       local it = builder.item(builder.paragraph(contents))
