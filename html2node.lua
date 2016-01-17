@@ -81,6 +81,23 @@ local function handleNode(node)
     end
   end
 
+  if nodeName == 'OL' or nodeName == 'UL' then
+    local tight = true
+    child = node.firstChild
+    while child do
+      local subchild = child.firstChild
+      while subchild do
+        if subchild.nodeName == 'P' then
+          tight = false
+          break
+        end
+        subchild = subchild.nextSibling
+      end
+      child = child.nextSibling
+    end
+    contents.tight = tight
+  end
+
   if nodeName == '#text' then
     local t = node.textContent
     return t
@@ -128,25 +145,13 @@ local function handleNode(node)
     end
   elseif nodeName == 'LI' then
     if has_text then
-      local it = builder.item(builder.paragraph(contents))
-      cmark.node_set_list_tight(it, 1)
-      return it
+      return builder.item(builder.paragraph(contents))
     else
       return builder.item(contents)
     end
   elseif nodeName == 'UL' then
-    local tight = true
-    for _,c in ipairs(contents) do
-      tight = tight and cmark.node_get_list_tight(c) == 1
-    end
-    contents.tight = tight
     return builder.bullet_list(contents)
   elseif nodeName == 'OL' then
-    local tight = true
-    for _,c in ipairs(contents) do
-      tight = tight and cmark.node_get_list_tight(c) == 1
-    end
-    contents.tight = tight
     return builder.ordered_list(contents)
   elseif nodeName == 'BR' then
     return builder.linebreak()
