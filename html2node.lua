@@ -4,6 +4,7 @@ local cmark = require'cmark'
 local builder = require'cmark.builder'
 
 local allowWhitespace = {
+    A = true,
     EM = true,
     STRONG = true,
     LINK = true,
