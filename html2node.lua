@@ -105,6 +105,9 @@ local function handleNode(node)
   if nodeName == '#text' then
     local t = node.textContent
     return t
+  elseif nodeName == '#comment' then
+    local t = node.textContent
+    return builder.html_block('<!--' .. t .. '-->')
   elseif skipNode[nodeName] then
     return {}
   elseif nodeName == 'HTML' then
