@@ -134,14 +134,14 @@ local function handleNode(node)
   elseif nodeName == 'UL' then
     local tight = true
     for _,c in ipairs(contents) do
-      tight = tight and cmark.node_get_list_tight(c)
+      tight = tight and cmark.node_get_list_tight(c) == 1
     end
     contents.tight = tight
     return builder.bullet_list(contents)
   elseif nodeName == 'OL' then
     local tight = true
     for _,c in ipairs(contents) do
-      tight = tight and cmark.node_get_list_tight(c)
+      tight = tight and cmark.node_get_list_tight(c) == 1
     end
     contents.tight = tight
     return builder.ordered_list(contents)
