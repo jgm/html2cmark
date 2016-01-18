@@ -93,8 +93,11 @@ local skipNode = {
     FOOTER = true
 }
 
-local raw = {
-    TABLE = 'block',
+local surround = {
+    DIV = true,
+    SECTION = true,
+    MAIN = true,
+    ARTICLE = true
 }
 
 local function handleNode(node, opts)
@@ -102,12 +105,6 @@ local function handleNode(node, opts)
   local parent = node.parentNode
   if skipNode[nodeName] then
     return {}
-  end
-
-  if raw[nodeName] == 'block' then
-    return builder.html_block(node.outerHTML)
-  elseif raw[nodeName] == 'inline' then
-    return builder.html_inline(node.outerHTML)
   end
 
   local child = node.firstChild
@@ -258,16 +255,8 @@ local function handleNode(node, opts)
     return builder.code(contents)
   elseif nodeName == 'IMG' then
     return builder.image(contents)
-  elseif #contents > 0 then
-    if is_phrasing_content(node) then
-      table.insert(contents, 1,
-                   builder.html_inline('<' .. node.localName .. attrString ..
-                    '>'))
-      if not node.implicitEndTag then
-        table.insert(contents,
-                   builder.html_inline('</' .. node.localName .. '>'))
-      end
-    elseif opts.markdown_in_html then
+  else
+    if surround[nodeName] and opts.markdown_in_html then
       table.insert(contents, 1,
                    builder.html_block('<' .. node.localName .. attrString ..
                     '>'))
@@ -275,13 +264,22 @@ local function handleNode(node, opts)
         table.insert(contents,
                    builder.html_block('</' .. node.localName .. '>'))
       end
-    end
-    return contents
-  else
-    if is_block_content(node) then
-      return builder.html_block(node.outerHTML)
+      return contents
+    elseif is_phrasing_content(node) then
+      table.insert(contents, 1,
+                   builder.html_inline('<' .. node.localName .. attrString ..
+                    '>'))
+      if not node.implicitEndTag then
+        table.insert(contents,
+                   builder.html_inline('</' .. node.localName .. '>'))
+      end
+      return contents
     else
-      return builder.html_inline(node.outerHTML)
+      if is_block_content(node) then
+        return builder.html_block(node.outerHTML)
+      else
+        return builder.html_inline(node.outerHTML)
+      end
     end
   end
 end
