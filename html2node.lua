@@ -298,7 +298,10 @@ local html2node = {}
 
 function html2node.parse_html(htmlstring, opts)
 
-  local html = gumbo.parse(htmlstring, 4, 'HTML')
+  local html, msg = gumbo.parse(htmlstring, 4, 'HTML')
+  if not html then
+    return nil, msg
+  end
   local nodes = html.documentElement.childNodes
   local children = {}
 
@@ -313,7 +316,12 @@ function html2node.parse_html(htmlstring, opts)
     end
   end
 
-  return builder.document(children)
+  local result, msg = builder.document(children)
+  if result then
+    return result
+  else
+    return nil, msg
+  end
 
 end
 
