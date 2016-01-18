@@ -296,14 +296,46 @@ end
 
 local html2node = {}
 
+local function lookup_attr(node, name)
+  local attributes = node.attributes
+  if not attributes then
+    return nil
+  end
+  for _,attr in ipairs(node.attributes) do
+   if attr.name == name then
+     return attr.value
+   end
+  end
+  return nil
+end
+
+local function get_content_node(node)
+  if node.nodeName == 'MAIN' or
+     (node.nodeName == 'DIV' and lookup_attr(node, 'id') == 'content') then
+    return node
+  else
+    for _,n in ipairs(node.childNodes) do
+      local res = get_content_node(n)
+      if res then
+        return res
+      end
+    end
+  end
+  return nil
+end
+
 function html2node.parse_html(htmlstring, opts)
 
   local html, msg = gumbo.parse(htmlstring, 4, 'HTML')
   if not html then
     return nil, msg
   end
-  local nodes = html.documentElement.childNodes
   local children = {}
+
+  -- try to find content node
+  local content_node = get_content_node(html.documentElement) or
+                        html.documentElement
+  local nodes = content_node.childNodes
 
   for _,node in ipairs(nodes) do
     local new = handleNode(node, opts or {})
