@@ -28,7 +28,7 @@ local phrasingNodes = {
   A = function(self, node) return self:contains_only_phrasing_content(node) end,
   ABBR = true,
   AREA = function(self, node)
-           return node.parent and node.parent.nodeName == 'MAP'
+           return node.parentNode and node.parentNode.nodeName == 'MAP'
          end,
   AUDIO = true,
   B = true,
@@ -285,10 +285,10 @@ local function handleNode(node, opts)
       end
       return contents
     else
-      if is_block_content(node) then
-        return builder.html_block(node.outerHTML)
-      else
+      if is_phrasing_content(node) or parent.nodeName == 'P' then
         return builder.html_inline(node.outerHTML)
+      else
+        return builder.html_block(node.outerHTML)
       end
     end
   end
