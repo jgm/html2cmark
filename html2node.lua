@@ -20,14 +20,14 @@ local phrasingNodes = {
     if result == true then
       return true
     elseif type(result) == 'function' then
-      return result(node)
+      return result(self, node)
     else
       return false
     end
   end,
-  A = contains_only_phrasing_content,
+  A = function(self, node) return self:contains_only_phrasing_content(node) end,
   ABBR = true,
-  AREA = function(node)
+  AREA = function(self, node)
            return node.parent and node.parent.nodeName == 'MAP'
          end,
   AUDIO = true,
@@ -41,16 +41,19 @@ local phrasingNodes = {
   CODE = true,
   COMMAND = true,
   DATALIST = true,
-  DEL = contains_only_phrasing_content,
+  DEL = function(self, node)
+          return self:contains_only_phrasing_content(node)
+        end,
   DFN = true,
-  DT = contains_only_phrasing_content,  -- JM this departs from spec
   EM = true,
   EMBED = true,
   I = true,
   IFRAME = true,
   IMG = true,
   INPUT = true,
-  INS = contains_only_phrasing_content,
+  INS = function(self, node)
+          return self:contains_only_phrasing_content(node)
+        end,
   MARK = true,
   MATH = true,
   METER = true,
