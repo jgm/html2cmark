@@ -3,62 +3,88 @@ local gumbo = require'gumbo'
 local cmark = require'cmark'
 local builder = require'cmark.builder'
 
-local blockNode = {
-  HTML = true,
-  HEAD = true,
-  ARTICLE = true,
-  MAIN = true,
-  NAV = true,
-  HEADER = true,
-  ASIDE = true,
-  HGROUP = true,
-  BLOCKQUOTE = true,
-  HR = true,
-  IFRAME = true,
-  BODY = true,
-  LI = true,
-  MAP = true,
+local phrasingNodes = {
+  contains_only_phrasing_content = function(self, node)
+    local child = node.firstChild
+    while child do
+      if not self:is_phrasing(child) then
+        return false
+      end
+      child = child.nextSibling
+    end
+    return true
+  end,
+  is_phrasing = function(self, node)
+    local nodename = node.nodeName
+    local result = self[nodename]
+    if result == true then
+      return true
+    elseif type(result) == 'function' then
+      return result(node)
+    else
+      return false
+    end
+  end,
+  A = contains_only_phrasing_content,
+  ABBR = true,
+  AREA = function(node)
+           return node.parent and node.parent.nodeName == 'MAP'
+         end,
+  AUDIO = true,
+  B = true,
+  BDI = true,
+  BDO = true,
+  BR = true,
   BUTTON = true,
-  OBJECT = true,
   CANVAS = true,
-  OL = true,
-  CAPTION = true,
-  OUTPUT = true,
-  COL = true,
-  P = true,
-  COLGROUP = true,
-  PRE = true,
-  DD = true,
-  PROGRESS = true,
-  DIV = true,
-  SECTION = true,
-  DL = true,
-  TABLE = true,
-  TD = true,
-  DT = true,
-  TBODY = true,
+  CITE = true,
+  CODE = true,
+  COMMAND = true,
+  DATALIST = true,
+  DEL = contains_only_phrasing_content,
+  DFN = true,
+  DT = contains_only_phrasing_content,  -- JM this departs from spec
+  EM = true,
   EMBED = true,
-  TEXTAREA = true,
-  FIELDSET = true,
-  TFOOT = true,
-  FIGCAPTION = true,
-  TH = true,
-  FIGURE = true,
-  THEAD = true,
-  FOOTER = true,
-  TR = true,
-  FORM = true,
-  UL = true,
-  H1 = true,
-  H2 = true,
-  H3 = true,
-  H4 = true,
-  H5 = true,
-  H6 = true,
-  VIDEO = true,
+  I = true,
+  IFRAME = true,
+  IMG = true,
+  INPUT = true,
+  INS = contains_only_phrasing_content,
+  MARK = true,
+  MATH = true,
+  METER = true,
+  NOSCRIPT = true,
+  OBJECT = true,
+  OUTPUT = true,
+  PROGRESS = true,
+  Q = true,
+  RUBY = true,
+  S = true,
+  SAMP = true,
   SCRIPT = true,
-  STYLE = true,
+  SELECt = true,
+  SMALL = true,
+  SPAN = true,
+  STRONG = true,
+  SUB = true,
+  SUP = true,
+  SVG = true,
+  TEXTAREA = true,
+  TIME = true,
+  U = true,
+  VIDEO = true,
+  WBR = true,
+  ["#text"] = true
 }
+
+local function is_phrasing_content(node)
+  return phrasingNodes:is_phrasing(node)
+end
+
+local function is_block_content(node)
+  return not phrasingNodes:is_phrasing(node)
+end
 
 local skipNode = {
     HEAD = true,
@@ -90,11 +116,7 @@ local function handleNode(node, opts)
   local all_text = true
   while child do
     local new = handleNode(child, opts)
-    if type(new) == 'table' then
-      for _,x in ipairs(new) do
-        contents[#contents + 1] = x
-      end
-    elseif type(new) == 'string' then
+    if type(new) == 'string' then
       if nodeName ~= 'OL' and nodeName ~= 'UL' then
         contents[#contents + 1] = new
       end
@@ -145,16 +167,16 @@ local function handleNode(node, opts)
     local prevS = node.previousSibling
     local nextS = node.nextSibling
     if (not parent or
-        blockNode[parent.nodeName] or
-        (prevS and (prevS.nodeName == 'BR' or blockNode[prevS.nodeName])) or
-        (nextS and blockNode[nextS.nodeName])) then
+        is_block_content(parent)) or
+        (prevS and (prevS.nodeName == 'BR' or is_block_content(prevS))) or
+        (nextS and is_block_content(nextS)) then
       if (not prevS or
           prevS.nodeName == 'BR' or
-          blockNode[prevS.nodeName]) then
+          is_block_content(prevS)) then
           t = t:gsub('^[ \t\r\n]+','')
       end
       if (not nextS or
-          blockNode[nextS.nodeName]) then
+          is_block_content(nextS)) then
           t = t:gsub('[ \t\r\n]+$','')
       end
     end
@@ -175,7 +197,7 @@ local function handleNode(node, opts)
   elseif nodeName == 'P' then
     return builder.paragraph(contents)
   elseif nodeName == 'BLOCKQUOTE' then
-    if has_text then
+    if all_text then
       return builder.block_quote(builder.paragraph(contents))
     else
       return builder.block_quote(contents)
@@ -213,7 +235,7 @@ local function handleNode(node, opts)
       return builder.html_block(node.outerHTML)
     end
   elseif nodeName == 'LI' then
-    if all_text then
+    if phrasingNodes:contains_only_phrasing_content(node) then
       return builder.item(builder.paragraph(contents))
     else
       return builder.item(contents)
@@ -237,16 +259,7 @@ local function handleNode(node, opts)
   elseif nodeName == 'IMG' then
     return builder.image(contents)
   elseif #contents > 0 then
-    if blockNode[nodeName] and not (parent.nodeName == 'P')
-        and opts.markdown_in_html then
-      table.insert(contents, 1,
-                   builder.html_block('<' .. node.localName .. attrString ..
-                    '>'))
-      if not node.implicitEndTag then
-        table.insert(contents,
-                   builder.html_block('</' .. node.localName .. '>'))
-      end
-    else
+    if is_phrasing_content(node) then
       table.insert(contents, 1,
                    builder.html_inline('<' .. node.localName .. attrString ..
                     '>'))
@@ -254,10 +267,18 @@ local function handleNode(node, opts)
         table.insert(contents,
                    builder.html_inline('</' .. node.localName .. '>'))
       end
+    elseif opts.markdown_in_html then
+      table.insert(contents, 1,
+                   builder.html_block('<' .. node.localName .. attrString ..
+                    '>'))
+      if not node.implicitEndTag then
+        table.insert(contents,
+                   builder.html_block('</' .. node.localName .. '>'))
+      end
     end
     return contents
   else
-    if blockNode[nodeName] then
+    if is_block_content(node) then
       return builder.html_block(node.outerHTML)
     else
       return builder.html_inline(node.outerHTML)
