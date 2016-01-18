@@ -242,14 +242,18 @@ local function handleNode(node, opts)
       table.insert(contents, 1,
                    builder.html_block('<' .. node.localName .. attrString ..
                     '>'))
-      table.insert(contents,
+      if not node.implicitEndTag then
+        table.insert(contents,
                    builder.html_block('</' .. node.localName .. '>'))
+      end
     else
       table.insert(contents, 1,
                    builder.html_inline('<' .. node.localName .. attrString ..
                     '>'))
-      table.insert(contents,
+      if not node.implicitEndTag then
+        table.insert(contents,
                    builder.html_inline('</' .. node.localName .. '>'))
+      end
     end
     return contents
   else
