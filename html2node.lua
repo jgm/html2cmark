@@ -210,7 +210,7 @@ local function handleNode(node, opts)
       end
       return builder.code_block{info = info, code}
     else
-      return builder.raw_html(node.outerHTML)
+      return builder.html_block(node.outerHTML)
     end
   elseif nodeName == 'LI' then
     if all_text then
