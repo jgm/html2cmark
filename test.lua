@@ -11,7 +11,7 @@ local errored = 0
 
 for num,test in ipairs(tests) do
   local oldhtml = test.html
-  local doc  = html2node.parse_html(oldhtml, cmark.OPT_DEFAULT)
+  local doc  = html2node.parse_html(oldhtml, {markdown_in_html = true})
   local newhtml = cmark.render_html(doc, cmark.OPT_DEFAULT)
   if not newhtml then
     errored = errored + 1

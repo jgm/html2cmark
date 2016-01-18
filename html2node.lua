@@ -1,4 +1,4 @@
-local inspect = require'inspect'.inspect
+-- local inspect = require'inspect'.inspect
 local gumbo = require'gumbo'
 local cmark = require'cmark'
 local builder = require'cmark.builder'
@@ -71,8 +71,9 @@ local raw = {
     TABLE = 'block',
 }
 
-local function handleNode(node)
+local function handleNode(node, opts)
   local nodeName = node.nodeName
+  local parent = node.parentNode
   if skipNode[nodeName] then
     return {}
   end
@@ -88,7 +89,7 @@ local function handleNode(node)
   local contents = {}
   local all_text = true
   while child do
-    local new = handleNode(child)
+    local new = handleNode(child, opts)
     if type(new) == 'table' then
       for _,x in ipairs(new) do
         contents[#contents + 1] = x
@@ -103,18 +104,22 @@ local function handleNode(node)
     end
     child = child.nextSibling
   end
+  local attrString = ""
   if attributes then
     for _,attribute in ipairs(attributes) do
       local attname = attribute.name
+      local attvalue = attribute.value
       if attname == 'href' or attname == 'src' then
-        contents.url = attribute.value
+        contents.url = attvalue
       elseif attname == 'title' then
-        contents.title = attribute.value
+        contents.title = attvalue
       elseif attname == 'alt' and #contents == 0 then
-        contents[1] = builder.text(attribute.value)
+        contents[1] = builder.text(attvalue)
       elseif attname == 'start' then
-        contents.start = attribute.value
+        contents.start = attvalue
       end
+      attrString = attrString .. ' ' .. attname .. '="' ..
+                      attribute.escapedValue .. '"'
     end
   end
 
@@ -137,7 +142,6 @@ local function handleNode(node)
 
   if nodeName == '#text' then
     local t = node.textContent
-    local parent = node.parentNode
     local prevS = node.previousSibling
     local nextS = node.nextSibling
     if (not parent or
@@ -232,22 +236,41 @@ local function handleNode(node)
     return builder.code(contents)
   elseif nodeName == 'IMG' then
     return builder.image(contents)
-  else
-    -- TODO proper handling of raw HTML
+  elseif #contents > 0 then
+    if blockNode[nodeName] and not (parent.nodeName == 'P')
+        and opts.markdown_in_html then
+      table.insert(contents, 1,
+                   builder.html_block('<' .. node.localName .. attrString ..
+                    '>'))
+      table.insert(contents,
+                   builder.html_block('</' .. node.localName .. '>'))
+    else
+      table.insert(contents, 1,
+                   builder.html_inline('<' .. node.localName .. attrString ..
+                    '>'))
+      table.insert(contents,
+                   builder.html_inline('</' .. node.localName .. '>'))
+    end
     return contents
+  else
+    if blockNode[nodeName] then
+      return builder.html_block(node.outerHTML)
+    else
+      return builder.html_inline(node.outerHTML)
+    end
   end
 end
 
 local html2node = {}
 
-function html2node.parse_html(htmlstring)
+function html2node.parse_html(htmlstring, opts)
 
   local html = gumbo.parse(htmlstring, 4, 'HTML')
   local nodes = html.documentElement.childNodes
   local children = {}
 
   for _,node in ipairs(nodes) do
-    local new = handleNode(node)
+    local new = handleNode(node, opts or {})
     if type(new) == 'table' then
       for _,n in ipairs(new) do
           children[#children + 1] = n
