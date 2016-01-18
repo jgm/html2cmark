@@ -123,7 +123,6 @@ local function handleNode(node, opts)
     end
     child = child.nextSibling
   end
-  local attrString = ""
   if attributes then
     for _,attribute in ipairs(attributes) do
       local attname = attribute.name
@@ -137,8 +136,6 @@ local function handleNode(node, opts)
       elseif attname == 'start' then
         contents.start = attvalue
       end
-      attrString = attrString .. ' ' .. attname .. '="' ..
-                      attribute.escapedValue .. '"'
     end
   end
 
@@ -218,19 +215,21 @@ local function handleNode(node, opts)
     contents.level = 6
     return builder.heading(contents)
   elseif nodeName == 'PRE' then
-    if #contents == 1 and
-        cmark.node_get_type(contents[1]) == cmark.NODE_CODE then
-      local code = cmark.node_get_literal(contents[1])
-      local info = nil
-      for _,attribute in ipairs(node.firstChild.attributes) do
-        if attribute.name == 'class' then
-          info = attribute.value:gsub('language%-','')
-        end
-      end
-      return builder.code_block{info = info, code}
-    else
-      return builder.html_block(node.outerHTML)
+    local code = node.textContent
+    local info = nil
+    local codenode = node.firstChild
+    while codenode and codenode.nodeName ~= 'CODE' do
+      codenode = codenode.nextSibling
     end
+    if not codenode then
+      codenode = node
+    end
+    for _,attribute in ipairs(codenode.attributes) do
+      if attribute.name == 'class' then
+        info = attribute.value:gsub('language%-','')
+      end
+    end
+    return builder.code_block{info = info, code}
   elseif nodeName == 'LI' then
     if phrasingNodes:contains_only_phrasing_content(node) then
       return builder.item(builder.paragraph(contents))
@@ -252,10 +251,18 @@ local function handleNode(node, opts)
   elseif nodeName == 'A' then
     return builder.link(contents)
   elseif nodeName == 'CODE' then
-    return builder.code(contents)
+    return builder.code(node.textContent)
   elseif nodeName == 'IMG' then
     return builder.image(contents)
   else
+    local attrString = ""
+    if node.attributes then
+      for _,attribute in ipairs(node.attributes) do
+        attrString = attrString .. ' ' .. attribute.name .. '="' ..
+                        attribute.escapedValue .. '"'
+      end
+    end
+
     if surround[nodeName] and opts.markdown_in_html then
       table.insert(contents, 1,
                    builder.html_block('<' .. node.localName .. attrString ..
