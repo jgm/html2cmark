@@ -105,6 +105,12 @@ local surround = {
 
 local function handleNode(node, opts)
   local nodeName = node.nodeName
+  local ignore = {}
+  if opts.ignore then
+    opts.ignore:gsub('%w+', function(m)
+      ignore[m:upper()] = true
+    end)
+  end
   local parent = node.parentNode
   if skipNode[nodeName] then
     return {}
@@ -266,11 +272,15 @@ local function handleNode(node, opts)
       end
     end
 
-    if surround[nodeName] and opts.markdown_in_html then
-      table.insert(contents, 1,
+    if ignore[nodeName] then
+      return {}
+    elseif surround[nodeName] then
+      if opts.containers then
+        table.insert(contents, 1,
                    builder.html_block('<' .. node.localName .. attrString ..
                     '>'))
-      if not node.implicitEndTag then
+      end
+      if opts.containers and not node.implicitEndTag then
         table.insert(contents,
                    builder.html_block('</' .. node.localName .. '>'))
       end
