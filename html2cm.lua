@@ -39,7 +39,8 @@ else
     if ok then
       table.insert(inpt, io.read("*all"))
     else
-      err("Could not open file '" .. f .. "': " .. msg, 7)
+      io.stderr:write("Could not open file '" .. f .. "': " .. msg .. '\n', 7)
+      os.exit(1)
     end
   end
   inp = table.concat(inpt, "\n")
@@ -52,7 +53,7 @@ if not doc then
   os.exit(1)
 end
 
-local cm, msg = cmark.render_commonmark(doc, cmark.OPT_DEFAULT, opts.columns)
+local cm, msg = cmark.render_commonmark(doc, cmark.OPT_DEFAULT, opts.columns or 72)
 
 if not cm then
   io.stderr:write(msg)
