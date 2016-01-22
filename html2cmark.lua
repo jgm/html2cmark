@@ -1,6 +1,5 @@
 -- local inspect = require'inspect'.inspect
 local gumbo = require'gumbo'
-local cmark = require'cmark'
 local builder = require'cmark.builder'
 
 local phrasingNodes = {
@@ -27,7 +26,7 @@ local phrasingNodes = {
   end,
   A = function(self, node) return self:contains_only_phrasing_content(node) end,
   ABBR = true,
-  AREA = function(self, node)
+  AREA = function(_, node)
            return node.parentNode and node.parentNode.nodeName == 'MAP'
          end,
   AUDIO = true,
@@ -336,7 +335,8 @@ end
 
 function html2node.parse_html(htmlstring, opts)
 
-  local html, msg = gumbo.parse(htmlstring, 4, 'HTML')
+  local html, msg
+  html, msg = gumbo.parse(htmlstring, 4, 'HTML')
   if not html then
     return nil, msg
   end
@@ -358,7 +358,8 @@ function html2node.parse_html(htmlstring, opts)
     end
   end
 
-  local result, msg = builder.document(children)
+  local result
+  result, msg = builder.document(children)
   if result then
     return result
   else

@@ -5,9 +5,9 @@ package.cpath = "../?.so;" .. package.cpath
 
 local optparse = require 'optparse'
 local cmark = require 'cmark'
-local builder = require 'cmark.builder'
 local html2cmark = require 'html2cmark'
 
+local opts
 local spec = [[
 html2cm 0.0
 https://github.com/jgm/html2cmark
@@ -27,7 +27,7 @@ Options:
 
 local optparser = optparse(spec)
 
-_G.arg, _G.opts = optparser:parse(_G.arg)
+_G.arg, opts = optparser:parse(_G.arg)
 
 local inp
 if #arg == 0 then
@@ -35,7 +35,7 @@ if #arg == 0 then
 else
   local inpt = {}
   for _,f in ipairs(arg) do
-    ok, msg = pcall(function() io.input(f) end)
+    local ok, msg = pcall(function() io.input(f) end)
     if ok then
       table.insert(inpt, io.read("*all"))
     else
@@ -46,14 +46,14 @@ else
   inp = table.concat(inpt, "\n")
 end
 
-
-local doc, msg = html2cmark.parse_html(inp, opts)
+local doc, cm, msg
+doc, msg = html2cmark.parse_html(inp, opts)
 if not doc then
   io.stderr:write(msg)
   os.exit(1)
 end
 
-local cm, msg = cmark.render_commonmark(doc, cmark.OPT_DEFAULT, opts.columns or 72)
+cm, msg = cmark.render_commonmark(doc, cmark.OPT_DEFAULT, opts.columns or 72)
 
 if not cm then
   io.stderr:write(msg)
