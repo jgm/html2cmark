@@ -6,7 +6,7 @@ package.cpath = "../?.so;" .. package.cpath
 local optparse = require 'optparse'
 local cmark = require 'cmark'
 local builder = require 'cmark.builder'
-local html2node = require 'html2node'
+local html2cmark = require 'html2cmark'
 
 local spec = [[
 html2cm 0.0
@@ -47,7 +47,7 @@ else
 end
 
 
-local doc, msg = html2node.parse_html(inp, opts)
+local doc, msg = html2cmark.parse_html(inp, opts)
 if not doc then
   io.stderr:write(msg)
   os.exit(1)

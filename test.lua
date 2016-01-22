@@ -3,7 +3,7 @@ package.cpath = "./?.so;" .. package.cpath
 
 local cmark = require 'cmark'
 local builder = require 'cmark.builder'
-local html2node = require 'html2node'
+local html2cmark = require 'html2cmark'
 local tests = require 'spec-tests'
 local passed = 0
 local failed = 0
@@ -11,7 +11,7 @@ local errored = 0
 
 for num,test in ipairs(tests) do
   local oldhtml = test.html
-  local doc  = html2node.parse_html(oldhtml, {markdown_in_html = true})
+  local doc  = html2cmark.parse_html(oldhtml, {markdown_in_html = true})
   local newhtml = cmark.render_html(doc, cmark.OPT_DEFAULT)
   if not newhtml then
     errored = errored + 1
