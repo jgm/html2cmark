@@ -1,8 +1,8 @@
 package = "html2cmark"
-version = "0.24.0-1"
+version = "_VERSION-_REVISION"
 source = {
     url = "git://github.com/jgm/html2cmark",
-    tag = "0.24.0"
+    tag = "_VERSION"
 }
 description = {
     summary = [[Convert HTML to Markdown]],
