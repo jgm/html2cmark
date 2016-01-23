@@ -15,7 +15,7 @@ function _M.run(wsapi_env)
   local req = request.new(wsapi_env)
 
   local html = req.POST.html.contents or req.POST.html
-  local opts = {}
+  local opts = {ignore="script"}
 
   local doc, msg = html2cmark.parse_html(html, opts)
   if not doc then
