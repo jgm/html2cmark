@@ -18,6 +18,7 @@ Convert HTML to CommonMark.
 
 Options:
 
+  --xml               Produce XML representation of AST
   --containers        Include HTML containers (e.g. div) around CommonMark
   --columns=NUMBER    Column width for wrapping (or 0 to preserve)
   --ignore=[TAG,...]  List of tags to ignore
@@ -53,7 +54,11 @@ if not doc then
   os.exit(1)
 end
 
-cm, msg = cmark.render_commonmark(doc, cmark.OPT_DEFAULT, opts.columns or 72)
+if opts.xml then
+  cm, msg = cmark.render_xml(doc, cmark.OPT_DEFAULT)
+else
+  cm, msg = cmark.render_commonmark(doc, cmark.OPT_DEFAULT, opts.columns or 72)
+end
 
 if not cm then
   io.stderr:write(msg .. '\n')
