@@ -183,7 +183,14 @@ local function handleNode(node, opts)
       end
     end
     if string.len(t) > 0 then
-      return t
+      local buf = {}
+      t:gsub('[^\r\n]+', function(x)
+          if #buf > 0 then
+            buf[#buf + 1] = builder.softbreak()
+          end
+          buf[#buf + 1] = builder.text(x)
+      end)
+      return buf
     else
       return {}
     end
