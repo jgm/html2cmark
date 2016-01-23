@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+  <script type="text/javascript" src="index.js"></script>
+  <title>HTML to CommonMark</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<div class="container">
+  <div class="row">
+      <h1>HTML to CommonMark</h1>
+      <p><a href="javascript:location.href='http://johnmacfarlane.net/cgi-bin/html2cmark.cgi?url='+encodeURIComponent(document.location.href);" title="bookmark">Bookmark</a><p>
+      <input id="url" type="url" name="url" style="width: 100%"
+      placeholder="Enter URL and hit Enter">
+      <div id="error"></div>
+      <pre id="result" style="width: 100%; height: 100%;"></pre>
+   <script>
+(function() {
+  var urlinput = document.getElementById('url');
+  urlinput.onkeydown = function(event){
+    var e = event || window.event;
+    if(e.keyCode == 13){
+        convert(urlinput.value);
+    }
+  }
+
+})();
+  </script>
+</body>
+</html>

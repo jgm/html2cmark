@@ -1,0 +1,1 @@
+javascript:location.href='http://johnmacfarlane.net/cgi-bin/html2cmark.cgi?url='+encodeURIComponent(document.location.href);
