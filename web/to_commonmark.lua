@@ -31,7 +31,7 @@ function _M.run(wsapi_env)
       return 500, headers, 'Could not retrieve HTML from ' .. url
     end
   else
-    html = req.POST.html.contents or req.params.html
+    html = req.params.html.contents or req.params.html
   end
 
 
