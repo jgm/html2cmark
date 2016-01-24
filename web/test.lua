@@ -33,6 +33,9 @@ local function dotest(name, method, params, headers, expected)
   return true
 end
 
+dotest('GET with url', 'GET',
+  {url = 'http://johnmacfarlane.net/papers'}, {},
+  {code = 200})
 dotest('POST with html', 'POST', {html = '<em>hi</em>'}, {},
   {code = 200, body = '*hi*\n'})
 dotest('GET with html', 'GET', {html = '<em>hi</em>'}, {},
