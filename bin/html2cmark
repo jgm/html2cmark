@@ -20,6 +20,7 @@ Options:
 
   --xml               Produce XML representation of AST
   --containers        Include HTML containers (e.g. div) around CommonMark
+  --comments          Include HTML comments
   --columns=NUMBER    Column width for wrapping (or 0 to preserve)
   --ignore=[TAG,...]  List of tags to ignore
   -V, --version       Version information

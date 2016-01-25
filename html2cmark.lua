@@ -198,8 +198,12 @@ local function handleNode(node, opts)
       return {}
     end
   elseif nodeName == '#comment' then
-    local t = node.textContent
-    return builder.html_block('<!--' .. t .. '-->')
+    if opts.comments then
+      local t = node.textContent
+      return builder.html_block('<!--' .. t .. '-->')
+    else
+      return {}
+    end
   elseif nodeName == 'HTML' then
     return contents
   elseif nodeName == 'BODY' then
