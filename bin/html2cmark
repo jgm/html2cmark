@@ -18,6 +18,7 @@ Convert HTML to CommonMark.
 Options:
 
   --xml               Produce XML representation of AST
+  --reference-links   Create reference links rather than inline
   --containers        Include HTML containers (e.g. div) around CommonMark
   --comments          Include HTML comments
   --columns=NUMBER    Column width for wrapping (or 0 to preserve)

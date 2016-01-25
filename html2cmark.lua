@@ -383,11 +383,51 @@ function M.parse_html(htmlstring, opts)
 
 end
 
+local make_reference_links = function(doc)
+  local urls = {}
+  local links = {}
+  local nextnum = 1
+  for cur, entering, node_type in cmark.walk(doc) do
+    if not entering and node_type == cmark.NODE_LINK then
+      local url = cmark.node_get_url(cur)
+      local title = cmark.node_get_title(cur)
+      local num = urls[url] and urls[url][title]
+      if not num then
+        num = nextnum
+        urls[url] = { [title] = num }
+        links[num] = { url = url, title = title }
+        nextnum = nextnum + 1
+      end
+      local ref = builder.custom_inline{
+                      on_enter = '[',
+                      on_exit = '][' .. num .. ']',
+                      builder.get_children(cur) }
+      local res = cmark.node_replace(cur, ref)
+      cmark.node_free(cur)
+      if not res then
+        return nil, 'Could not replace link with reference'
+      end
+    end
+  end
+  local refs = {}
+  for i,link in ipairs(links) do
+    local titlepart = ''
+    refs[#refs + 1] = '[' .. i .. ']: ' ..  link.url ..
+        ((#link.title > 0 and (' "' .. link.title .. '"')) or '')
+  end
+  cmark.node_append_child(doc, builder.custom_block{on_enter =
+       table.concat(refs,'\n')})
+end
+
 function M.to_commonmark(inp, opts)
   local doc, cm, msg
   doc, msg = M.parse_html(inp, opts)
   if not doc then
     return nil, msg
+  end
+
+  if opts.reference_links then
+    make_reference_links(doc)
   end
 
   cm, msg = cmark.render_commonmark(doc, cmark.OPT_DEFAULT, opts.columns or 72)
