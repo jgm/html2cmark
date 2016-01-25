@@ -1,6 +1,7 @@
 -- local inspect = require'inspect'.inspect
 local gumbo = require'gumbo'
 local builder = require'cmark.builder'
+local cmark = require'cmark'
 
 local phrasingNodes = {
   contains_only_phrasing_content = function(self, node)
@@ -317,7 +318,7 @@ local function handleNode(node, opts)
   end
 end
 
-local html2node = {}
+local M = {}
 
 local function lookup_attr(node, name)
   local attributes = node.attributes
@@ -347,7 +348,7 @@ local function get_content_node(node)
   return nil
 end
 
-function html2node.parse_html(htmlstring, opts)
+function M.parse_html(htmlstring, opts)
 
   local html, msg
   html, msg = gumbo.parse(htmlstring, 4, 'HTML')
@@ -382,4 +383,37 @@ function html2node.parse_html(htmlstring, opts)
 
 end
 
-return html2node
+function M.to_commonmark(inp, opts)
+  local doc, cm, msg
+  doc, msg = M.parse_html(inp, opts)
+  if not doc then
+    return nil, msg
+  end
+
+  cm, msg = cmark.render_commonmark(doc, cmark.OPT_DEFAULT, opts.columns or 72)
+
+  if not cm then
+    return nil, msg
+  end
+
+  return cm
+end
+
+function M.to_xml(inp, opts)
+  local doc, xml, msg
+  doc, msg = M.parse_html(inp, opts)
+  if not doc then
+    return nil, msg
+  end
+
+  xml, msg = cmark.render_xml(doc, cmark.OPT_DEFAULT, opts.columns or 72)
+
+  if not xml then
+    return nil, msg
+  end
+
+  return xml
+end
+
+
+return M

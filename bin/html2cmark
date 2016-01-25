@@ -4,7 +4,6 @@
 -- package.cpath = "../?.so;" .. package.cpath
 
 local optparse = require 'optparse'
-local cmark = require 'cmark'
 local html2cmark = require 'html2cmark'
 
 local opts
@@ -48,22 +47,16 @@ else
   inp = table.concat(inpt, "\n")
 end
 
-local doc, cm, msg
-doc, msg = html2cmark.parse_html(inp, opts)
-if not doc then
-  io.stderr:write(msg .. '\n')
-  os.exit(1)
-end
-
+local res, msg
 if opts.xml then
-  cm, msg = cmark.render_xml(doc, cmark.OPT_DEFAULT)
+  res, msg = html2cmark.to_xml(inp, opts)
 else
-  cm, msg = cmark.render_commonmark(doc, cmark.OPT_DEFAULT, opts.columns or 72)
+  res, msg = html2cmark.to_commonmark(inp, opts)
 end
 
-if not cm then
+if not res then
   io.stderr:write(msg .. '\n')
   os.exit(1)
 end
 
-io.write(cm)
+io.write(res)
