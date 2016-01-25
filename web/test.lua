@@ -17,7 +17,7 @@ local function dotest(name, method, params, headers, expected)
   end
   if response.headers["Content-type"] ~= "text/plain; charset=UTF-8" then
     io.write('FAILED\nContent-type is ' ..
-       response.headers["Content-type"] .. '\n')
+       tostring(response.headers["Content-type"]) .. '\n')
     failed = failed + 1
     return false
   end

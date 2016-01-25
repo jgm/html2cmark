@@ -411,12 +411,13 @@ local make_reference_links = function(doc)
   end
   local refs = {}
   for i,link in ipairs(links) do
-    local titlepart = ''
     refs[#refs + 1] = '[' .. i .. ']: ' ..  link.url ..
         ((#link.title > 0 and (' "' .. link.title .. '"')) or '')
   end
-  cmark.node_append_child(doc, builder.custom_block{on_enter =
+  if #refs > 0 then
+    cmark.node_append_child(doc, builder.custom_block{on_enter =
        table.concat(refs,'\n')})
+  end
 end
 
 function M.to_commonmark(inp, opts)

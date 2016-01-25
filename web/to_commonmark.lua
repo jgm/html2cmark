@@ -35,14 +35,9 @@ function _M.run(wsapi_env)
   end
 
 
-  local opts = {ignore="script"}
+  local opts = {ignore="script", reference_links = true}
 
-  local doc, msg = html2cmark.parse_html(html, opts)
-  if not doc then
-    return 500, headers, msg
-  end
-
-  local cm, msg = cmark.render_commonmark(doc, cmark.OPT_DEFAULT, opts.columns or 72)
+  local cm, msg = html2cmark.to_commonmark(html, opts)
 
   local function cm_text()
     coroutine.yield(cm)
