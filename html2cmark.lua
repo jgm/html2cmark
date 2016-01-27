@@ -132,6 +132,8 @@ local function handleNode(node, opts)
     end
     child = child.nextSibling
   end
+
+  local class = ''
   if attributes then
     for _,attribute in ipairs(attributes) do
       local attname = attribute.name
@@ -144,6 +146,8 @@ local function handleNode(node, opts)
         contents[1] = builder.text(attvalue)
       elseif attname == 'start' then
         contents.start = attvalue
+      elseif attname == 'class' then
+        class = attvalue
       end
     end
   end
@@ -286,7 +290,7 @@ local function handleNode(node, opts)
       end
     end
 
-    if ignore[nodeName] then
+    if ignore[nodeName] or class:match('menu') or class:match('nav') then
       return {}
     elseif surround[nodeName] then
       if opts.containers then
