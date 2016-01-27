@@ -1,7 +1,13 @@
-.PHONY: upload, test
+.PHONY: upload test deps clean
 
 to_commonmark.lua: main.lua
-	LUA_PATH="../?.lua;$$LUA_PATH" amalg.lua -o $@ -s $< html2cmark wsapi wsapi.request cURL
+	sed -n '/local html2cmark =/!p;//q' $< > $@
+	echo 'local gethtml2cmark = function()' >> $@
+	cat ../html2cmark.lua >> $@
+	echo 'end' >> $@
+	echo 'local html2cmark = gethtml2cmark()' >> $@
+	sed -n '1,/local html2cmark =/!p' $< >> $@
+	chmod +x $@
 
 test:
 	lua test.lua
@@ -15,3 +21,5 @@ upload:
 	scp to_commonmark.lua website:cgi-bin/
 	# scp index.html index.js website:html/tmp334/
 
+clean:
+	rm to_commonmark.lua
