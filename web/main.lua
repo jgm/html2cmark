@@ -35,7 +35,9 @@ function _M.run(wsapi_env)
   end
 
 
-  local opts = {ignore="script", reference_links = true}
+  local opts = {skip="script,noscript",
+                ignore="span,div,article,section",
+                reference_links = true}
 
   local cm, msg = html2cmark.to_commonmark(html, opts)
 

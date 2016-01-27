@@ -112,7 +112,7 @@ local function handleNode(node, opts)
   end
   if opts.ignore then
     opts.ignore:gsub('%w+', function(m)
-      skip[m:upper()] = true
+      ignore[m:upper()] = true
     end)
   end
   local parent = node.parentNode
