@@ -89,13 +89,6 @@ local function is_block_content(node)
   return not phrasingNodes:is_phrasing(node)
 end
 
-local skipNode = {
-    HEAD = true,
-    NAV = true,
-    HEADER = true,
-    FOOTER = true
-}
-
 local surround = {
     DIV = true,
     SECTION = true,
@@ -105,35 +98,29 @@ local surround = {
 
 local function handleNode(node, opts)
   local nodeName = node.nodeName
+  local skip = {
+    HEAD = true,
+    NAV = true,
+    HEADER = true,
+    FOOTER = true,
+    SCRIPT = true }
   local ignore = {}
+  if opts.skip then
+    opts.skip:gsub('%w+', function(m)
+      skip[m:upper()] = true
+    end)
+  end
   if opts.ignore then
     opts.ignore:gsub('%w+', function(m)
-      ignore[m:upper()] = true
+      skip[m:upper()] = true
     end)
   end
   local parent = node.parentNode
-  if skipNode[nodeName] then
-    return {}
-  end
 
-  local child = node.firstChild
-  local attributes = node.attributes
   local contents = {}
-  local all_text = true
-  while child do
-    local new = handleNode(child, opts)
-    if type(new) == 'string' then
-      if nodeName ~= 'OL' and nodeName ~= 'UL' then
-        contents[#contents + 1] = new
-      end
-    else
-      all_text = false
-      contents[#contents + 1] = new
-    end
-    child = child.nextSibling
-  end
 
   local class = ''
+  local attributes = node.attributes
   if attributes then
     for _,attribute in ipairs(attributes) do
       local attname = attribute.name
@@ -150,6 +137,25 @@ local function handleNode(node, opts)
         class = attvalue
       end
     end
+  end
+
+  if skip[nodeName] or class:match('menu') or class:match('nav') then
+    return {}
+  end
+
+  local child = node.firstChild
+  local all_text = true
+  while child do
+    local new = handleNode(child, opts)
+    if type(new) == 'string' then
+      if nodeName ~= 'OL' and nodeName ~= 'UL' then
+        contents[#contents + 1] = new
+      end
+    else
+      all_text = false
+      contents[#contents + 1] = new
+    end
+    child = child.nextSibling
   end
 
   if nodeName == 'OL' or nodeName == 'UL' then
@@ -209,6 +215,8 @@ local function handleNode(node, opts)
     else
       return {}
     end
+  elseif ignore[nodeName] then
+    return contents
   elseif nodeName == 'HTML' then
     return contents
   elseif nodeName == 'BODY' then
@@ -290,9 +298,7 @@ local function handleNode(node, opts)
       end
     end
 
-    if ignore[nodeName] or class:match('menu') or class:match('nav') then
-      return {}
-    elseif surround[nodeName] then
+    if surround[nodeName] then
       if opts.containers then
         table.insert(contents, 1,
                    builder.html_block('<' .. node.localName .. attrString ..

@@ -1,6 +1,6 @@
 .PHONY: upload test deps clean
 
-to_commonmark.lua: main.lua
+to_commonmark.lua: main.lua ../html2cmark.lua
 	sed -n '/local html2cmark =/!p;//q' $< > $@
 	echo 'local gethtml2cmark = function()' >> $@
 	cat ../html2cmark.lua >> $@
