@@ -81,6 +81,16 @@ local phrasingNodes = {
   ["#text"] = true
 }
 
+local inlineContainer = {
+  P = true,
+  H1 = true,
+  H2 = true,
+  H3 = true,
+  H4 = true,
+  H5 = true,
+  H6 = true,
+}
+
 local function is_phrasing_content(node)
   return phrasingNodes:is_phrasing(node)
 end
@@ -138,6 +148,11 @@ local function handleNode(node, opts)
       contents[#contents + 1] = new
     end
     child = child.nextSibling
+  end
+
+  if not (phrasingNodes[nodeName] or inlineContainer[nodeName]) and
+      phrasingNodes:contains_only_phrasing_content(node) then
+    contents = {builder.paragraph(contents)}
   end
 
   if nodeName == 'OL' or nodeName == 'UL' then
@@ -248,11 +263,7 @@ local function handleNode(node, opts)
     end
     return builder.code_block{info = info, code}
   elseif nodeName == 'LI' then
-    if phrasingNodes:contains_only_phrasing_content(node) then
-      return builder.item(builder.paragraph(contents))
-    else
-      return builder.item(contents)
-    end
+    return builder.item(contents)
   elseif nodeName == 'UL' then
     return builder.bullet_list(contents)
   elseif nodeName == 'OL' then
