@@ -22,8 +22,8 @@ Options:
   --containers        Include HTML containers (e.g. div) around CommonMark
   --comments          Include HTML comments
   --columns=NUMBER    Column width for wrapping (or 0 to preserve)
-  --skip=[TAG,...]    List of tags to skip (together with their contents)
-  --ignore=[TAG,...]  List of tags to ignore
+  --skip=TAG,...      List of tags to skip (together with their contents)
+  --ignore=TAG,...    List of tags to ignore
   -V, --version       Version information
   -h, --help          This message
 ]]
