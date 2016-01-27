@@ -98,23 +98,8 @@ local surround = {
 
 local function handleNode(node, opts)
   local nodeName = node.nodeName
-  local skip = {
-    HEAD = true,
-    NAV = true,
-    HEADER = true,
-    FOOTER = true,
-    SCRIPT = true }
-  local ignore = {}
-  if opts.skip then
-    opts.skip:gsub('%w+', function(m)
-      skip[m:upper()] = true
-    end)
-  end
-  if opts.ignore then
-    opts.ignore:gsub('%w+', function(m)
-      ignore[m:upper()] = true
-    end)
-  end
+  local skip = opts.skip or {}
+  local ignore = opts.ignore or {}
   local parent = node.parentNode
 
   local contents = {}
@@ -139,7 +124,7 @@ local function handleNode(node, opts)
     end
   end
 
-  if skip[nodeName] or class:match('menu') or class:match('nav') then
+  if skip[nodeName] then
     return {}
   end
 

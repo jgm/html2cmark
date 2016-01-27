@@ -22,8 +22,8 @@ Options:
   --containers        Include HTML containers (e.g. div) around CommonMark
   --comments          Include HTML comments
   --columns=NUMBER    Column width for wrapping (or 0 to preserve)
-  --skip=TAG,...      List of tags to skip (together with their contents)
-  --ignore=TAG,...    List of tags to ignore
+  --skip=TAG          List of tags to skip (together with their contents)
+  --ignore=TAG        List of tags to ignore
   -V, --version       Version information
   -h, --help          This message
 ]]
@@ -50,6 +50,29 @@ else
 end
 
 local res, msg
+if opts.skip then
+  if type(opts.skip) == 'string' then
+    opts.skip = {opts.skip}
+  end
+  for _,nn in ipairs(opts.skip) do
+    opts.skip[nn:upper()] = true
+  end
+else
+  opts.skip = {}
+end
+opts.skip.HEAD = true
+opts.skip.NAV = true
+opts.skip.HEADER = true
+opts.skip.FOOTER = true
+opts.skip.SCRIPT = true
+if opts.ignore then
+  if type(opts.ignore) == 'string' then
+    opts.ignore = {opts.ignore}
+  end
+  for _,nn in ipairs(opts.ignore) do
+    opts.ignore[nn:upper()] = true
+  end
+end
 if opts.xml then
   res, msg = html2cmark.to_xml(inp, opts)
 else
