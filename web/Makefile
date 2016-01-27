@@ -1,8 +1,13 @@
 .PHONY: upload, test
 
-upload:
-	scp index.html index.js website:html/tmp334/
-	scp to_commonmark.lua website:cgi-bin/
-
 test:
 	lua test.lua
+
+deps:
+	luarocks install --local wsapi
+	luarocks install --local Lua-cURL
+
+upload:
+	# scp index.html index.js website:html/tmp334/
+	scp to_commonmark.lua website:cgi-bin/
+
