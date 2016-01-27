@@ -104,7 +104,6 @@ local function handleNode(node, opts)
 
   local contents = {}
 
-  local class = ''
   local attributes = node.attributes
   if attributes then
     for _,attribute in ipairs(attributes) do
@@ -118,8 +117,6 @@ local function handleNode(node, opts)
         contents[1] = builder.text(attvalue)
       elseif attname == 'start' then
         contents.start = attvalue
-      elseif attname == 'class' then
-        class = attvalue
       end
     end
   end
