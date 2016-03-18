@@ -103,7 +103,9 @@ local surround = {
     DIV = true,
     SECTION = true,
     MAIN = true,
-    ARTICLE = true
+    ARTICLE = true,
+    HEADER = true,
+    FOOTER = true
 }
 
 local function handleNode(node, opts)
