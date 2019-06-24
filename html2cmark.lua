@@ -325,22 +325,9 @@ end
 
 local M = {}
 
-local function lookup_attr(node, name)
-  local attributes = node.attributes
-  if not attributes then
-    return nil
-  end
-  for _,attr in ipairs(node.attributes) do
-   if attr.name == name then
-     return attr.value
-   end
-  end
-  return nil
-end
-
 local function get_content_node(node)
   if node.nodeName == 'MAIN' or
-     (node.nodeName == 'DIV' and lookup_attr(node, 'id') == 'content') then
+     (node.nodeName == 'DIV' and node.id == 'content') then
     return node
   else
     for _,n in ipairs(node.childNodes) do
@@ -356,7 +343,7 @@ end
 function M.parse_html(htmlstring, opts)
 
   local html, msg
-  html, msg = gumbo.parse(htmlstring, 4, 'HTML')
+  html, msg = gumbo.parse(htmlstring, 4, 'BODY')
   if not html then
     return nil, msg
   end
